@@ -904,8 +904,8 @@ void buttons()
     lcdwindow = 300;
     if ((buttleft.isRelease()) || (buttrith.isRelease()) || (buttdown.isRelease()) || (buttup.isRelease()))
     {
-      tmrSleep = millis();
       lcdwindow = sleeplcdwindow;
+      tmrSleep = millis();
     }
   }
 }
