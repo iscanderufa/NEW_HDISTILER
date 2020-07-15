@@ -1,0 +1,28 @@
+{
+  "name": "WiFiWebServer",
+  "version": "1.0.4",
+  "keywords": "wifi, wi-fi, WebServer, WiFiNINA, WiFi101, ESP32, Teensy, AVR, Mega, SAM DUE, SAMD21, SAMD51, STM32, U-Blox, W101, W102, W13x, nRF52",
+  "description": "Simple WebServer library for AVR Mega, Teensy, SAM DUE, SAMD21, SAMD51, STM32, nRF52 boards using WiFiNINA U-Blox modules/shields",
+  "authors":
+  {
+    "name":  "Khoi Hoang",
+    "url":   "https://github.com/khoih-prog",
+    "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/khoih-prog/WiFiWebServer"
+  },
+  "homepage": "https://github.com/khoih-prog/WiFiWebServer",
+  "export": {
+    "exclude": [
+      "linux",
+      "extras",
+      "tests"
+    ]
+  },    
+  "frameworks": "*",
+  "platforms": "*",
+  "examples": "examples/*/*/*.ino"
+}
