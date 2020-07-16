@@ -66,6 +66,7 @@ int lcdsbstrnumber = 0;
 int lcdwindow = 100;
 int oldlcdwindow = 0;
 int btnincriment = 1;
+bool sleepflag = 0;
 uint32_t tmrSleep;
 uint32_t sleeplcdwindow;
 long A = 95;
@@ -150,13 +151,25 @@ void volumespirt()
 {
   D = (((A * B) / C) - B);
   if (A < 0)
+  {
     A = 0;
+    btnincriment = 1;
+  }
   if (A > 100)
+  {
     A = 100;
+    btnincriment = 1;
+  }
   if (C < 0)
+  {
     C = 0;
+    btnincriment = 1;
+  }
   if (C > 100)
+  {
     C = 100;
+    btnincriment = 1;
+  }
   //Serial.print("Крепость%: ");
   //Serial.println(A);
   //Serial.print("Объём спирта Мл: ");
@@ -458,7 +471,10 @@ void lcdprint301()
 {
   A = lcdparam;
   if (A > 100)
+  {
+    btnincriment = 1;
     A = 0;
+  }
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("PAGE:3.1 ");
@@ -472,7 +488,10 @@ void lcdprint302()
 {
   A = lcdparam;
   if (A > 100)
+  {
+    btnincriment = 1;
     A = 0;
+  }
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("PAGE:3.2 ");
@@ -498,7 +517,10 @@ void lcdprint304()
 {
   C = lcdparam;
   if (C > 100)
+  {
     C = 0;
+    btnincriment = 1;
+  }
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("PAGE:3.4 ");
@@ -548,6 +570,11 @@ void lcdprint3()
 void lcdprint401()
 {
   valueMax = lcdparam;
+  if (valueMax > 200)
+  {
+    valueMax = 200;
+    btnincriment = 1;
+  }
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("PAGE:4.1 ");
@@ -828,81 +855,100 @@ void buttons()
   buttup.tick();   // обязательная функция отработки. Должна постоянно опрашиваться
   buttdown.tick(); // обязательная функция отработки. Должна постоянно опрашиваться
   int tmrhldbtn;   //при нажатии кнопок запускается таймер увеличения хода инкримента вверх вниз.
-  if (buttup.isPress() || buttdown.isPress())
-    tmrhldbtn = millis();
-  if ((millis() - tmrhldbtn) > 1500)
+  if (sleepflag == 0)
   {
-    if (buttup.isHold() || buttdown.isHold())
-    {
-      btnincriment++;
+    if (buttup.isPress() || buttdown.isPress())
       tmrhldbtn = millis();
-    }
-  }
-  if (buttup.isRelease() || buttdown.isRelease())
-    btnincriment = 1;
-  if (lcdsubstring == 0)
-  {
-    if (buttleft.isClick())
-      lcdprintnumber--;
-    if (buttleft.isStep())
-      lcdprintnumber--;
-    if (buttrith.isClick())
-      lcdprintnumber++;
-    if (buttrith.isStep())
-      lcdprintnumber++;
-    if (buttup.isStep() || buttup.isClick() || buttdown.isStep() || buttdown.isClick())
+    if ((millis() - tmrhldbtn) > 1500)
     {
-      //lcdparam = 0;
-      lcdsubstring = 1;
-      lcdsbstrnumber = 1;
+      if (buttup.isHold() || buttdown.isHold())
+      {
+        btnincriment++;
+        tmrhldbtn = millis();
+      }
     }
-  }
+    if (buttup.isRelease() || buttdown.isRelease())
+      btnincriment = 1;
+    if (lcdsubstring == 0)
+    {
+      if (buttleft.isRelease())
+        lcdprintnumber--;
+      if (buttleft.isStep())
+        lcdprintnumber--;
+      if (buttrith.isRelease())
+        lcdprintnumber++;
+      if (buttrith.isStep())
+        lcdprintnumber++;
+      if (buttup.isStep() || buttup.isRelease() || buttdown.isStep() || buttdown.isRelease())
+      {
+        //lcdparam = 0;
+        lcdsubstring = 1;
+        lcdsbstrnumber = 1;
+      }
+    }
 
-  if (lcdsubstring == 1)
-  {
-    if (buttleft.isClick())
-      lcdsbstrnumber--;
-    if (buttleft.isStep())
-      lcdsbstrnumber--;
-    if (buttrith.isClick())
-      lcdsbstrnumber++;
-    if (buttrith.isStep())
-      lcdsbstrnumber++;
-    if (buttup.isClick())
-      lcdparam++;
-    if (buttdown.isClick())
-      lcdparam--;
-    if (buttdown.isStep())
-      (lcdparam = lcdparam - btnincriment);
-    if (buttup.isStep())
-      (lcdparam = lcdparam + btnincriment);
-  }
-  if (lcdprintnumber > 7)    lcdprintnumber = 0;
-  if (lcdprintnumber < 0)    lcdprintnumber = 7;
-  if (lcdsbstrnumber > 6)    lcdsbstrnumber = 0;
-  if (lcdsbstrnumber < 0)    lcdsbstrnumber = 6;
-  if (lcdparam > 100000)     lcdparam = 0;
-  if (lcdparam < 0)
-  {
-    lcdparam = 0;
-    btnincriment = 1;
-  }
-  if (lcdsbstrnumber == 0)
-    lcdsubstring = 0;
-  lcdwindow = ((lcdprintnumber * 100) + lcdsbstrnumber);
-  //Serial.print("LCDWINDOW: ");
-  //Serial.println(lcdwindow);
-  if ((buttleft.isRelease()) || (buttrith.isRelease()) || (buttdown.isRelease()) || (buttup.isRelease()))
-    tmrSleep = millis();
-  if ((millis() - tmrSleep) > 60000)
-  {
-    sleeplcdwindow = lcdwindow;
-    lcdwindow = 300;
-    if (buttleft.isRelease() || buttrith.isRelease() || buttdown.isRelease() || buttup.isRelease())
+    if (lcdsubstring == 1)
     {
-      lcdwindow = sleeplcdwindow;
-      // tmrSleep = millis();
+      if (buttleft.isClick())
+        lcdsbstrnumber--;
+      if (buttleft.isStep())
+        lcdsbstrnumber--;
+      if (buttrith.isClick())
+        lcdsbstrnumber++;
+      if (buttrith.isStep())
+        lcdsbstrnumber++;
+      if (buttup.isClick())
+        lcdparam++;
+      if (buttdown.isClick())
+        lcdparam--;
+      if (buttdown.isStep())
+        (lcdparam = lcdparam - btnincriment);
+      if (buttup.isStep())
+        (lcdparam = lcdparam + btnincriment);
     }
+    if (lcdprintnumber > 7)
+      lcdprintnumber = 0;
+    if (lcdprintnumber < 0)
+      lcdprintnumber = 7;
+    if (lcdsbstrnumber > 6)
+      lcdsbstrnumber = 0;
+    if (lcdsbstrnumber < 0)
+      lcdsbstrnumber = 6;
+    if (lcdparam > 100000)
+    {
+      lcdparam = 0;
+      btnincriment = 1;
+    }
+    if (lcdparam < 0)
+    {
+      lcdparam = 0;
+      btnincriment = 1;
+    }
+    if (lcdsbstrnumber == 0)
+      lcdsubstring = 0;
+    lcdwindow = ((lcdprintnumber * 100) + lcdsbstrnumber);
+    //Serial.print("LCDWINDOW: ");
+    //Serial.println(lcdwindow);
+    if ((buttleft.isRelease()) || (buttrith.isRelease()) || (buttdown.isRelease()) || (buttup.isRelease()))
+      tmrSleep = millis();
+    if ((millis() - tmrSleep) > 60000)
+    {
+      sleeplcdwindow = lcdwindow;
+      //Serial.print("sleeplcdwindow: ");
+      // Serial.println(sleeplcdwindow);
+      lcdwindow = 300;
+      sleepflag = 1;
+      //Serial.print("sleepflag1: ");
+      // Serial.println(sleepflag);
+    }
+  }
+  if ((sleepflag == 1) && ((buttleft.isRelease()) || (buttrith.isRelease()) || (buttdown.isRelease()) || (buttup.isRelease())))
+  {
+    lcdwindow = sleeplcdwindow;
+    tmrSleep = millis();
+    sleepflag = 0;
+    Serial.print("sleepflag0 = ");
+    Serial.println(sleepflag);
   }
 }
 void lcdprint()
@@ -1466,13 +1512,19 @@ void loop()
     fadeselect();
     selectpumpvalue();
     volumespirt();
+    lcdprint();
   }
   if (myTimer2.isReady())
   {
-    //Serial.println("Timer 2!")
     lcdbrith();
-    lcdprint();
-    /*Serial.print("lcdwindow is: ");
+    /*Serial.println("Timer 2!")
+  Serial.print("sleepflagEND = ");
+  Serial.println(sleepflag);
+  Serial.print("sleeplcdwindow = ");
+  Serial.println(sleeplcdwindow);
+  Serial.print("lcdwindow = ");
+  Serial.println(lcdwindow);
+  Serial.print("lcdwindow is: ");
   Serial.println(lcdwindow);
   Serial.print("oldlcdwindow is: ");
   Serial.println(oldlcdwindow);
